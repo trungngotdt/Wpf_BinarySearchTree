@@ -30,7 +30,7 @@
         <StackPanel x:Name="MenuStack" Grid.Column="0" Background="Azure">
 
 
-            <Expander Header="Add Node" Height="120" Grid.Column="0">
+            <Expander Header="Add Node" Grid.Column="0">
                 <StackPanel>
                     <Button x:Name="BtnAddNode" 
                             Content="Add"
@@ -63,6 +63,20 @@
                          Text="{Binding NumbeFind,Mode=OneWayToSource}"/>
                 </StackPanel>
            
+            </Expander>
+            <Expander Header="Delete Node">
+                <StackPanel>
+                    <Button x:Name="BtnDeleteNode" 
+                                Content="Delete"
+                                Width="70"
+                                Command="{Binding BtnDeleteNodeClickCommand}"
+                                CommandParameter="{Binding ElementName=BSTGrid}">
+                    </Button>
+                    <TextBox x:Name="TxbDeleteNode"
+                         Width="70"
+                         Margin="0,25,0,0"
+                         Text="{Binding NodeBeDelete,Mode=OneWayToSource}"/>
+                </StackPanel>
             </Expander>
         </StackPanel>
         <ScrollViewer Grid.Column="1"

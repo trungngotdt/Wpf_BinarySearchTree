@@ -31,6 +31,7 @@ namespace Wpf_BinarySearchTree.ViewModel
         private double widthGridBST;
         private int num;
         private int numbeFind;
+        private int nodeBeDelete;
         private Node<int> nodeRoot;
 
         private readonly int VerticalMarging = 100;
@@ -39,19 +40,22 @@ namespace Wpf_BinarySearchTree.ViewModel
         private ICommand btnAddNodeClickCommand;
         private ICommand bSTGridSizeChanged;
         private ICommand btnFindNodeClickCommand;
+        private ICommand btnDeleteNodeClickCommand;
 
         public int Num { get => num; set => num = value; }
         public int NumbeFind { get => numbeFind; set => numbeFind = value; }
+        public int NodeBeDelete { get => nodeBeDelete; set => nodeBeDelete = value; }
         public Node<int> NodeRoot { get => nodeRoot; set => nodeRoot = value; }
         public double WidthGridBST { get => widthGridBST; set => widthGridBST = value; }
         public double HeightGridBST { get => heightGridBST; set => heightGridBST = value; }
+
+
         public ICommand BtnAddNodeClickCommand
         {
             get
             {
                 return btnAddNodeClickCommand = new RelayCommand<object[]>((p) =>
                 {
-
                     AddNodeGridAsync(p[1] as Grid);
                 });
             }
@@ -59,8 +63,11 @@ namespace Wpf_BinarySearchTree.ViewModel
 
         public ICommand BSTGridSizeChanged { get { return bSTGridSizeChanged; } }
 
-        public ICommand BtnFindNodeClickCommand { get {return btnFindNodeClickCommand=new RelayCommand<UIElement>((p)=> { FindNodeInGrid(new Node<int>(NumbeFind),p); }); }  }
-        
+        public ICommand BtnFindNodeClickCommand { get { return btnFindNodeClickCommand = new RelayCommand<UIElement>((p) => { FindNodeInGrid(new Node<int>(NumbeFind), p); }); } }
+
+        public ICommand BtnDeleteNodeClickCommand { get { return btnDeleteNodeClickCommand = new RelayCommand<Grid>((p) => { DeleteNodeInGrid(p); }); } }
+
+
         /// <summary>
         /// Initializes a new instance of the MainViewModel class.
         /// </summary>
@@ -99,7 +106,7 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// <param name="y2"></param>
         /// <param name="isRightLeaf"></param>
         /// <param name="name"></param>
-        private async void DrawLine(Grid grid, double x1, double x2, double y1, double y2, bool isRightLeaf,string name)
+        private async void DrawLine(Grid grid, double x1, double x2, double y1, double y2, bool isRightLeaf, string name)
         {
             await Task.Factory.StartNew(() =>
              {
@@ -116,13 +123,13 @@ namespace Wpf_BinarySearchTree.ViewModel
                              {
                                  Stroke = new SolidColorBrush(Colors.Black),
                                  StrokeThickness = 2.0,
-                                 Name=name,
+                                 Name = name,
                                  X1 = x1 + (isRightLeaf ? 50 : 0),
                                  X2 = x1 + (isRightLeaf ? 50 : 0), //x2 + (isRightLeaf ? 0 : 50),
                                  Y1 = y1 + 25, //btn1Point.Y + a.ActualHeight / 2;
                                  Y2 = y1 + 25
                              };
-                             AnimationGrowLine(x2 + (isRightLeaf ? 0 : 50), y2+25, TimeSpan.FromSeconds(1), l);
+                             AnimationGrowLine(x2 + (isRightLeaf ? 0 : 50), y2 + 25, TimeSpan.FromSeconds(1), l);
                              grid.Children.Add(l);
                          });// btn2Point.Y + b.ActualHeight / 2;  
                          //Application.Current.Dispatcher.Invoke(() => { (uI as Button).Content = "AAAAAAAAAAAAAAAA";});
@@ -132,6 +139,8 @@ namespace Wpf_BinarySearchTree.ViewModel
              });
         }
 
+
+
         /// <summary>
         /// Grow a line to x2,y2
         /// </summary>
@@ -139,7 +148,7 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// <param name="y2"></param>
         /// <param name="time">The time the line will be grow</param>
         /// <param name="line"></param>
-        public void AnimationGrowLine(double x2,double y2,TimeSpan time,Line line)
+        public void AnimationGrowLine(double x2, double y2, TimeSpan time, Line line)
         {
             Storyboard sb = new Storyboard();
             DoubleAnimation animationX2 = new DoubleAnimation(x2, time);
@@ -202,8 +211,8 @@ namespace Wpf_BinarySearchTree.ViewModel
                     Task taskReLayoutBtn = Task.Factory.StartNew(() => { ReLayoutAllButton(p as Grid); });
                     await Task.WhenAll(taskReLayoutBtn);
                 }
-                Task taskDrawLine = Task.Factory.StartNew(() => 
-                DrawLine(p as Grid, checkExitsParent.Item1.X, node.X, checkExitsParent.Item1.Y, node.Y, checkExitsParent.Item2 > 0,$"{"Btn"+checkExitsParent.Item1.Data.ToString()+ "Btn" + node.Data.ToString() }")
+                Task taskDrawLine = Task.Factory.StartNew(() =>
+                DrawLine(p as Grid, checkExitsParent.Item1.X, node.X, checkExitsParent.Item1.Y, node.Y, checkExitsParent.Item2 > 0, $"{"Btn" + checkExitsParent.Item1.Data.ToString() + "Btn" + node.Data.ToString() }")
                 );
                 await Task.WhenAll(taskDrawLine);
             }
@@ -270,7 +279,7 @@ namespace Wpf_BinarySearchTree.ViewModel
                         {
                             var X2 = p.X2;
                             var Y2 = p.Y2;
-                            p.BeginAnimation(Line.X2Property, null);
+                            p.BeginAnimation(Line.X2Property, null);//Animation be removed
                             if (p.X1 < X2)
                             {
                                 p.X1 = p.X1 * 2 - 50;
@@ -281,7 +290,7 @@ namespace Wpf_BinarySearchTree.ViewModel
                                 p.X2 = X2 * 2 - 50;
                                 p.X1 = p.X1 * 2;
                             }
-                            p.BeginAnimation(Line.Y2Property, null);
+                            p.BeginAnimation(Line.Y2Property, null);//Animation be removed
                             p.Y2 = Y2;
                         });
                     });
@@ -343,21 +352,21 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// </summary>
         /// <param name="node"></param>
         /// <param name="grid"></param>
-        private void FindNodeInGrid(Node<int> node,UIElement grid)
+        private void FindNodeInGrid(Node<int> node, UIElement grid)
         {
-            var nodeBeFind=NodeRoot.FindNode(node);
-            if (nodeBeFind==null)
+            var nodeBeFind = NodeRoot.FindNode(node);
+            if (nodeBeFind == null)
             {
                 return;
             }
-            var button= (grid as Grid).Children.OfType<Button>().ToList()
+            var button = (grid as Grid).Children.OfType<Button>().ToList()
                 .Where(p => p.Content.Equals(nodeBeFind.Data.ToString()))
                 .FirstOrDefault();
-            if (button==null)
+            if (button == null)
             {
                 return;
             }
-            var point= button.TranslatePoint(new Point(0, 0), grid as Grid);
+            var point = button.TranslatePoint(new Point(0, 0), grid as Grid);
             CreateCircleAsync(point, grid);
 
         }
@@ -366,23 +375,25 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// Create a circle in 10 seconds
         /// </summary>
         /// <param name="point"></param>
-        private async void CreateCircleAsync(Point point,UIElement grid)
+        private async void CreateCircleAsync(Point point, UIElement grid)
         {
             Ellipse ellipse;
             await Task.Factory.StartNew(() =>
             {
-                Application.Current.Dispatcher.Invoke(() => { ellipse = new Ellipse()
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    Stroke = new SolidColorBrush(Colors.Red),
-                    Width = 55,
-                    Height = 55,
-                    StrokeThickness = 1.0
-                };
-                (grid as Grid).Children.Add(ellipse);
-           
+                    ellipse = new Ellipse()
+                    {
+                        Stroke = new SolidColorBrush(Colors.Red),
+                        Width = 55,
+                        Height = 55,
+                        StrokeThickness = 1.0
+                    };
+                    (grid as Grid).Children.Add(ellipse);
+
                 });
-               
-            //.OfType<Ellipse>()
+
+                //.OfType<Ellipse>()
             });
             await Task.Factory.StartNew(() =>
             {
@@ -395,6 +406,68 @@ namespace Wpf_BinarySearchTree.ViewModel
         }
         #endregion
 
+        #region Delete a node (button)
+
+        private void DeleteNodeInGrid(Grid grid)
+        {
+            Button button = null;
+            List<Task> listTask = new List<Task>();
+            for (int i = 0; i <= grid.Children.OfType<Button>().ToList().Count; i++)
+            {
+                int j = i;
+                var task = Task.Factory.StartNew(() =>
+                 {
+                     Application.Current.Dispatcher.Invoke(() =>
+                     {
+                         if (grid.Children[j] is Button)
+                         {
+                             if ((grid.Children[j] as Button).Content.Equals(NodeBeDelete.ToString()))
+                             {
+                                 button = grid.Children[j] as Button;
+                                 return;
+                             }
+                         }
+                     });
+                 });
+                listTask.Add(task);
+            }
+
+            Task.Factory.ContinueWhenAll(listTask.ToArray(), (p) =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                { AnimationButtonMovetTo(20, 20, button); });
+            });
+            //var button = grid.Children.OfType<Button>().ToList().AsParallel().Where(p =>p.Content.Equals(NodeBeDelete.ToString())).FirstOrDefault();
+
+        }
+
+        /// <summary>
+        /// Move a button from here to (x,y) with animation
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="button"></param>
+        private void AnimationButtonMovetTo(double x, double y, Button button)
+        {
+            if (button == null)
+            {
+                return;
+            }
+            Storyboard sb = new Storyboard();
+            ThicknessAnimation animation = new ThicknessAnimation(new Thickness(x, y, 0, 0), TimeSpan.FromSeconds(1));
+            Storyboard.SetTarget(animation, button);
+            Storyboard.SetTargetProperty(animation, new PropertyPath("Margin"));
+            sb.Children.Add(animation);
+            sb.Completed += (o, s) =>
+            {
+                var margin = button.Margin;
+                button.BeginAnimation(Button.MarginProperty, null);
+                button.Margin = margin;
+            };
+            sb.Begin();
+        }
+
+        #endregion
 
 
 
