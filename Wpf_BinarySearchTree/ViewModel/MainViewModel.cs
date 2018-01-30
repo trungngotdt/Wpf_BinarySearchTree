@@ -85,6 +85,10 @@ namespace Wpf_BinarySearchTree.ViewModel
         }*/
 
 
+        #region Add a node to grid
+
+        #region Draw line
+
         /// <summary>
         /// Draw a line from the button to the other button
         /// </summary>
@@ -95,7 +99,7 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// <param name="y2"></param>
         /// <param name="isRightLeaf"></param>
         /// <param name="name"></param>
-        async void DrawLine(Grid grid, double x1, double x2, double y1, double y2, bool isRightLeaf,string name)
+        private async void DrawLine(Grid grid, double x1, double x2, double y1, double y2, bool isRightLeaf,string name)
         {
             await Task.Factory.StartNew(() =>
              {
@@ -133,7 +137,7 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// </summary>
         /// <param name="x2"></param>
         /// <param name="y2"></param>
-        /// <param name="time"></param>
+        /// <param name="time">The time the line will be grow</param>
         /// <param name="line"></param>
         public void AnimationGrowLine(double x2,double y2,TimeSpan time,Line line)
         {
@@ -150,12 +154,14 @@ namespace Wpf_BinarySearchTree.ViewModel
             /*line.BeginAnimation(Line.X2Property, animationX2);
             line.BeginAnimation(Line.Y2Property, animationY2);*/
         }
+        #endregion
+
 
         /// <summary>
         /// Add a node to Grid
         /// </summary>
         /// <param name="p">this is a grid which will be add a button</param>
-        async void AddNodeGridAsync(UIElement p)
+        private async void AddNodeGridAsync(UIElement p)
         {
             double x = 0;
             double y = 0;
@@ -197,7 +203,7 @@ namespace Wpf_BinarySearchTree.ViewModel
                     await Task.WhenAll(taskReLayoutBtn);
                 }
                 Task taskDrawLine = Task.Factory.StartNew(() => 
-                DrawLine(p as Grid, checkExitsParent.Item1.X, node.X, checkExitsParent.Item1.Y, node.Y, checkExitsParent.Item2 > 0,$"{"Btn"+ Num.ToString()+ "Btn" + node.Data.ToString() }")
+                DrawLine(p as Grid, checkExitsParent.Item1.X, node.X, checkExitsParent.Item1.Y, node.Y, checkExitsParent.Item2 > 0,$"{"Btn"+checkExitsParent.Item1.Data.ToString()+ "Btn" + node.Data.ToString() }")
                 );
                 await Task.WhenAll(taskDrawLine);
             }
@@ -211,7 +217,7 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// <param name="data"></param>
         /// <param name="thickness"></param>
         /// <returns></returns>
-        bool AddNode(UIElement gridPanel, int data, Thickness thickness)
+        private bool AddNode(UIElement gridPanel, int data, Thickness thickness)
         {
             try
             {
@@ -234,11 +240,13 @@ namespace Wpf_BinarySearchTree.ViewModel
             }
         }
 
+        #region Relayout for button
+
         /// <summary>
         /// Re-layout all buttons from grid
         /// </summary>
         /// <param name="grid"></param>
-        void ReLayoutAllButton(Grid grid)
+        private void ReLayoutAllButton(Grid grid)
         {
             Application.Current.Dispatcher.Invoke(() =>
             {
@@ -260,85 +268,38 @@ namespace Wpf_BinarySearchTree.ViewModel
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            if (p.X1 < p.X2)
+                            var X2 = p.X2;
+                            var Y2 = p.Y2;
+                            p.BeginAnimation(Line.X2Property, null);
+                            if (p.X1 < X2)
                             {
                                 p.X1 = p.X1 * 2 - 50;
-                                p.X2 = p.X2 * 2;
+                                p.X2 = X2 * 2;
                             }
                             else
                             {
-                                p.X2 = p.X2 * 2 - 50;
+                                p.X2 = X2 * 2 - 50;
                                 p.X1 = p.X1 * 2;
                             }
-
+                            p.BeginAnimation(Line.Y2Property, null);
+                            p.Y2 = Y2;
                         });
                     });
                 });
-
             });
         }
-
-        void FindNodeInGrid(Node<int> node,UIElement grid)
-        {
-            var nodeBeFind=NodeRoot.FindNode(node);
-            if (nodeBeFind==null)
-            {
-                return;
-            }
-            var button= (grid as Grid).Children.OfType<Button>().ToList()
-                .Where(p => p.Content.Equals(nodeBeFind.Data.ToString()))
-                .FirstOrDefault();
-            if (button==null)
-            {
-                return;
-            }
-            var point= button.TranslatePoint(new Point(0, 0), grid as Grid);
-            CreateCircleAsync(point, grid);
-
-        }
-
-        /// <summary>
-        /// Create a circle in 10 seconds
-        /// </summary>
-        /// <param name="point"></param>
-        async void CreateCircleAsync(Point point,UIElement grid)
-        {
-            Ellipse ellipse;
-            await Task.Factory.StartNew(() =>
-            {
-                Application.Current.Dispatcher.Invoke(() => { ellipse = new Ellipse()
-                {
-                    Stroke = new SolidColorBrush(Colors.Red),
-                    Width = 55,
-                    Height = 55,
-                    StrokeThickness = 1.0
-                };
-                (grid as Grid).Children.Add(ellipse);
-           
-                });
-               
-            //.OfType<Ellipse>()
-            });
-            await Task.Factory.StartNew(() =>
-            {
-                Application.Current.Dispatcher.Invoke(async () =>
-                {
-                    await Task.Delay(3000);
-                    (grid as Grid).Children.Remove((grid as Grid).Children.OfType<Ellipse>().FirstOrDefault());
-                });
-            });
-        }
-
         /// <summary>
         /// Resize the grid (<seealso cref="HeightGridBST"/>+100; <seealso cref="WidthGridBST"/>*2)
         /// </summary>
-        void ResizeGrid()
+        private void ResizeGrid()
         {
             WidthGridBST = WidthGridBST * 2;
             HeightGridBST = HeightGridBST + 100;
             RaisePropertyChanged("WidthGridBST");
             RaisePropertyChanged("HeightGridBST");
         }
+
+        #endregion
 
         /// <summary>
         /// Draw the round button
@@ -372,6 +333,68 @@ namespace Wpf_BinarySearchTree.ViewModel
             // Set the ControlTemplate as the Button.Template
             button.Template = circleButtonTemplate;
         }
+        #endregion
+
+        #region Find a Node (button) in grid
+
+        /// <summary>
+        /// Function for btnFindNodeClickCommand
+        /// It will find a node-button in grid and draw a circle around button 
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="grid"></param>
+        private void FindNodeInGrid(Node<int> node,UIElement grid)
+        {
+            var nodeBeFind=NodeRoot.FindNode(node);
+            if (nodeBeFind==null)
+            {
+                return;
+            }
+            var button= (grid as Grid).Children.OfType<Button>().ToList()
+                .Where(p => p.Content.Equals(nodeBeFind.Data.ToString()))
+                .FirstOrDefault();
+            if (button==null)
+            {
+                return;
+            }
+            var point= button.TranslatePoint(new Point(0, 0), grid as Grid);
+            CreateCircleAsync(point, grid);
+
+        }
+
+        /// <summary>
+        /// Create a circle in 10 seconds
+        /// </summary>
+        /// <param name="point"></param>
+        private async void CreateCircleAsync(Point point,UIElement grid)
+        {
+            Ellipse ellipse;
+            await Task.Factory.StartNew(() =>
+            {
+                Application.Current.Dispatcher.Invoke(() => { ellipse = new Ellipse()
+                {
+                    Stroke = new SolidColorBrush(Colors.Red),
+                    Width = 55,
+                    Height = 55,
+                    StrokeThickness = 1.0
+                };
+                (grid as Grid).Children.Add(ellipse);
+           
+                });
+               
+            //.OfType<Ellipse>()
+            });
+            await Task.Factory.StartNew(() =>
+            {
+                Application.Current.Dispatcher.Invoke(async () =>
+                {
+                    await Task.Delay(3000);
+                    (grid as Grid).Children.Remove((grid as Grid).Children.OfType<Ellipse>().FirstOrDefault());
+                });
+            });
+        }
+        #endregion
+
 
 
 
