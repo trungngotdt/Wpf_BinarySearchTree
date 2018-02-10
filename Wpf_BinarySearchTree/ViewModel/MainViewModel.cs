@@ -56,7 +56,7 @@ namespace Wpf_BinarySearchTree.ViewModel
             {
                 return btnAddNodeClickCommand = new RelayCommand<object[]>((p) =>
                 {
-                    AddNodeGridAsync(p[1] as Grid);
+                    AddButtonGridAsync(p[1] as Grid);
                 });
             }
         }
@@ -65,7 +65,7 @@ namespace Wpf_BinarySearchTree.ViewModel
 
         public ICommand BtnFindNodeClickCommand { get { return btnFindNodeClickCommand = new RelayCommand<UIElement>((p) => { FindNodeInGrid(new Node<int>(NumbeFind), p); }); } }
 
-        public ICommand BtnDeleteNodeClickCommand { get { return btnDeleteNodeClickCommand = new RelayCommand<Grid>((p) => { DeleteNodeInGrid(p); }); } }
+        public ICommand BtnDeleteNodeClickCommand { get { return btnDeleteNodeClickCommand = new RelayCommand<Grid>((p) => { DeleteNodeInGrid(p, NodeBeDelete); }); } }
 
 
         /// <summary>
@@ -167,10 +167,10 @@ namespace Wpf_BinarySearchTree.ViewModel
 
 
         /// <summary>
-        /// Add a node to Grid
+        /// To calculate new position and button will be added to Grid
         /// </summary>
         /// <param name="p">this is a grid which will be add a button</param>
-        private async void AddNodeGridAsync(UIElement p)
+        private async void AddButtonGridAsync(UIElement p)
         {
             double x = 0;
             double y = 0;
@@ -408,11 +408,16 @@ namespace Wpf_BinarySearchTree.ViewModel
 
         #region Delete a node (button)
 
-        private void DeleteNodeInGrid(Grid grid)
+        private void DeleteNodeInGrid(Grid grid, int nodeDelete)
         {
+            if (nodeBeDelete == null)
+            {
+                return;
+            }
+            /*
             Button button = null;
             List<Task> listTask = new List<Task>();
-            for (int i = 0; i <= grid.Children.OfType<Button>().ToList().Count; i++)
+            for (int i = 0; i <= grid.Children.OfType<Button>().ToList().Count; i++)//Find a button will be remove
             {
                 int j = i;
                 var task = Task.Factory.StartNew(() =>
@@ -421,7 +426,7 @@ namespace Wpf_BinarySearchTree.ViewModel
                      {
                          if (grid.Children[j] is Button)
                          {
-                             if ((grid.Children[j] as Button).Content.Equals(NodeBeDelete.ToString()))
+                             if ((grid.Children[j] as Button).Content.Equals(nodeDelete.ToString()))
                              {
                                  button = grid.Children[j] as Button;
                                  return;
@@ -430,15 +435,173 @@ namespace Wpf_BinarySearchTree.ViewModel
                      });
                  });
                 listTask.Add(task);
-            }
-
-            Task.Factory.ContinueWhenAll(listTask.ToArray(), (p) =>
+            }*/
+            var tup = FindButtonInGrid(grid, nodeDelete);
+            //Task.Factory.ContinueWhenAll(tup.Result.Item1.ToArray(), p => { });
+            tup.ContinueWith(p =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
-                { AnimationButtonMovetTo(20, 20, button); });
+                {
+                    AnimationButtonMovetTo(20, 20, p.Result.Item2);
+                    UpdateButtonAfterDelete(grid, nodeDelete);
+                });
             });
-            //var button = grid.Children.OfType<Button>().ToList().AsParallel().Where(p =>p.Content.Equals(NodeBeDelete.ToString())).FirstOrDefault();
+            /*
+            Task.Factory.ContinueWhenAll(tup.Result.Item1.ToArray(), (p) =>
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                { AnimationButtonMovetTo(20, 20, tup.Result.Item2); UpdateButtonAfterDelete(grid, nodeDelete); });
+            });*/
 
+            //var button = grid.Children.OfType<Button>().ToList().AsParallel().Where(p =>p.Content.Equals(NodeBeDelete.ToString())).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// The line be found in grid by name
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        Line FindLineInGrid(Grid grid, string name)
+        {
+            var line = grid.Children.OfType<Line>().Where(p => p.Name.Equals(name)).FirstOrDefault();
+            return line;
+        }
+
+        /// <summary>
+        /// Find the Button in grid  - async
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="match">name of the button</param>
+        /// <returns></returns>
+        async Task<Tuple<List<Task>, Button>> FindButtonInGrid(Grid grid, object match)
+        {
+            Button button = null;
+            List<Task> listTask = new List<Task>();
+            var allButtonInGrid = grid.Children.OfType<Button>().ToList();
+            for (int i = 0; i < allButtonInGrid.Count; i++)//Find a button will be remove
+            {
+                int j = i;
+                var task = Task.Factory.StartNew(() =>
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (allButtonInGrid[j].Content.Equals(match.ToString()))
+                        {
+                            button = allButtonInGrid[j];
+                        }
+                    });
+                });
+                listTask.Add(task);
+            }
+            await Task.WhenAll(listTask);
+            //var result = new Tuple<List<Task>, Button>(listTask, button);
+            return new Tuple<List<Task>, Button>(listTask, button);
+        }
+
+        /// <summary>
+        /// Update X,Y for button (node)
+        /// </summary>
+        /// <param name="grid"></param>
+        /// <param name="nodeDelete"></param>
+        void UpdateButtonAfterDelete(Grid grid, int nodeDelete)
+        {
+            var nodeDel = NodeRoot.FindNode(new Node<int>(nodeDelete));
+
+            if (nodeDel.Right != null && nodeDel.Letf != null)//Delete Button in grid (the button have 2 child )
+            {
+                //We will move successor from there to new position (the real button will be deleted)
+                var nodePreviousDel = nodeDel;
+                nodeDel = nodeDel.FindNode(new Node<int>(int.Parse(nodeDel.Successor().ToString())));
+                var tup = FindButtonInGrid(grid, nodeDel.Data);
+                tup.ContinueWith(p =>
+                {
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        AnimationButtonMovetTo(nodePreviousDel.X, nodePreviousDel.Y, p.Result.Item2);//to move a successor to new position (the button will be deleted)
+                        UpdateButtonAfterDelete(grid, nodeDel.Data);
+                    });
+                });
+            }
+            else
+            {
+                //Delete button have one or none child
+                var nodePa = NodeRoot.FindParent(new Node<int>(nodeDel.Data));
+                var line = FindLineInGrid(grid, $"{"Btn" +nodePa.Item1.Data.ToString()+"Btn"+nodeDel.Data.ToString()}");
+                var lineL = nodeDel.Letf == null ? null : FindLineInGrid(grid, $"{"Btn" +nodeDel.Data.ToString()+"Btn"+nodeDel.Letf.Data.ToString()}");                
+                var lineR = nodeDel.Right == null ? null : FindLineInGrid(grid, $"{"Btn"+nodeDel.Data.ToString()+"Btn"+nodeDel.Right.Data.ToString()}");
+                grid.Children.Remove(lineR);
+                grid.Children.Remove(lineL);
+                grid.Children.Remove(line);
+                var taskL = Task.Factory.StartNew(() =>
+                 {
+                     Application.Current.Dispatcher.Invoke(() => { RelayoutButtonAfterDelete(grid, nodePa.Item1, false, nodeDel.Letf); });
+                 });
+                var taskR = Task.Factory.StartNew(() =>
+                 {
+                     Application.Current.Dispatcher.Invoke(() => { RelayoutButtonAfterDelete(grid, nodePa.Item1, true, nodeDel.Right); });
+                 });
+                Task.WhenAll(new Task[] { taskL, taskR });
+            }
+        }
+
+
+        void RelayoutButtonAfterDelete(Grid grid, Node<int> nodeParent, bool isRight, Node<int> node = null)
+        {
+            if (node == null)
+            {
+                return;
+            }
+            if (nodeParent != null)
+            {
+                var nameLine = $"{"Btn"+ nodeParent.Data.ToString()+"Btn"+node.Data.ToString()}";
+                var line = FindLineInGrid(grid,nameLine );
+                grid.Children.Remove(line);
+                var remainingSpace = grid.ActualWidth / Math.Pow(2, ((nodeParent.Y + VerticalMarging) / VerticalMarging));
+                node.X = nodeParent.X + (isRight == true ? remainingSpace : -remainingSpace);
+                node.Y = nodeParent.Y + VerticalMarging;
+                DrawLine(grid, nodeParent.X, node.X, nodeParent.Y, node.Y, isRight, nameLine);
+            }
+            else
+            {
+                node.X = grid.ActualWidth / 2;
+                node.Y = VerticalMarging;
+            }
+            /*
+            if (isRight)
+            {
+                node.X = nodeParent.X + grid.ActualWidth / Math.Pow(2, ((nodeParent.Y + VerticalMarging) / VerticalMarging));
+                node.Y = nodeParent.Y + VerticalMarging;
+            }
+            else
+            {
+                node.X = nodeParent.X - grid.ActualWidth / Math.Pow(2, ((nodeParent.Y + VerticalMarging) / VerticalMarging));
+                node.Y = nodeParent.Y + VerticalMarging;
+            }
+            */
+            var button = grid.Children.OfType<Button>().Where(p => p.Name.Equals("Btn" + node.Data.ToString())).Single();
+            AnimationButtonMovetTo(node.X, node.Y, button);
+
+            var taskR = Task.Factory.StartNew(() =>
+            {
+                Application.Current.Dispatcher.Invoke(() => { RelayoutButtonAfterDelete(grid, node, true, node.Right); });
+            });
+            var taskL = Task.Factory.StartNew(() =>
+            {
+                Application.Current.Dispatcher.Invoke(() => { RelayoutButtonAfterDelete(grid, node, false, node.Letf); });
+            });
+            Task.WhenAll(new Task[] { taskL, taskR });
+        }
+
+        void ReDrawLine(Grid grid, double x1, double x2, double y1, double y2, bool isButtonDelete, string name, Node<int> nodePa = null, Node<int> nodeChild = null)
+        {
+            if (isButtonDelete)
+            {
+                if (nodePa.Right == null && nodePa.Letf == null)
+                {
+
+                }
+            }
         }
 
         /// <summary>
@@ -462,7 +625,7 @@ namespace Wpf_BinarySearchTree.ViewModel
             {
                 var margin = button.Margin;
                 button.BeginAnimation(Button.MarginProperty, null);
-                button.Margin = margin;
+                button.Margin = new Thickness(x, y, 0, 0);
             };
             sb.Begin();
         }
