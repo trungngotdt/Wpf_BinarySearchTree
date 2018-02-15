@@ -224,7 +224,7 @@ namespace Wpf_BinarySearchTree.Model
 
                         if (parent.Item1.Data.Equals(item.Data))
                         {
-                            parent.Item1.Right = null;
+                            parent.Item1.Right = nodeFind.Right;
                             node.Data = suc;
                             return true;
                         }
