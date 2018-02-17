@@ -193,7 +193,7 @@ namespace Wpf_BinarySearchTree.Model
             {
                 if (node.CompareTo(item) == 0)
                 {
-                    if (node.Right != null && node.Left == null || node.Right == null && node.Left!= null)//one child
+                    /*if (node.Right != null && node.Left == null || node.Right == null && node.Left!= null)//one child
                     {
                         var parent = FindParent(node);
                         if (node.Right != null)
@@ -214,6 +214,30 @@ namespace Wpf_BinarySearchTree.Model
                         parent.Item1.Left = parent.Item2 == -1 ? null : parent.Item1.Left;
                         parent.Item1.Right = parent.Item2 == 1 ? null : parent.Item1.Right;
                         return true;
+                    }*/
+                    if (node.Right == null && node.Left == null)//no child
+                    {
+                        var parent = FindParent(node);
+                        parent.Item1.Left = parent.Item2 == -1 ? null : parent.Item1.Left;
+                        parent.Item1.Right = parent.Item2 == 1 ? null : parent.Item1.Right;
+                        return true;
+                    }
+                    if (node.Right == null)//one child
+                    {
+                        node.Data = node.Left.Data;
+                        var right = node.Left == null ? null : node.Left.Right;
+                        node.Left = node.Left == null ? null : node.Left.Left;
+                        node.Right = right;
+                        return true;
+                    }
+                    else if (node.Left == null)//one child
+                    {
+                        node.Data = node.Right.Data;
+                        
+                        var left = node.Right == null ? null : node.Right.Left;
+                        node.Right = node.Right == null ? null : node.Right.Right;
+                        node.Left = left;// node.Right == null ? null : node.Right.Left;
+                        return true;//node.Left==
                     }
                     else//two child
                     {
@@ -349,7 +373,7 @@ namespace Wpf_BinarySearchTree.Model
             {
                 return;
             }
-            if (this.Data == null)
+            if (this.Data == null||this==null)
             {
                 this.Data = item.Data;
                 this.Left = item.Left;
