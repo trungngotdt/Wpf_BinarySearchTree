@@ -46,7 +46,7 @@
                     <TextBox x:Name="TxbNode"
                              Width="70"
                              Margin="0,25,0,0"
-                             Text="{Binding Num,Mode=OneWayToSource}"/>
+                             Text="{Binding NumBeAdd,Mode=OneWayToSource}"/>
                 </StackPanel>
             </Expander>
             <Expander Header="Find Node">
@@ -75,7 +75,7 @@
                     <TextBox x:Name="TxbDeleteNode"
                          Width="70"
                          Margin="0,25,0,0"
-                         Text="{Binding NodeBeDelete,Mode=OneWayToSource}"/>
+                         Text="{Binding NumBeDelete,Mode=OneWayToSource}"/>
                 </StackPanel>
             </Expander>
         </StackPanel>

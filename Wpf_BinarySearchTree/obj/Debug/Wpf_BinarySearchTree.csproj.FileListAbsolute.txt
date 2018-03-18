@@ -31,3 +31,4 @@ c:\users\admin\source\repos\Wpf_BinarySearchTree\Wpf_BinarySearchTree\obj\Debug\
 c:\users\admin\source\repos\Wpf_BinarySearchTree\Wpf_BinarySearchTree\obj\Debug\Wpf_BinarySearchTree.exe
 c:\users\admin\source\repos\Wpf_BinarySearchTree\Wpf_BinarySearchTree\obj\Debug\Wpf_BinarySearchTree.pdb
 C:\Users\Admin\source\repos\Wpf_BinarySearchTree\Wpf_BinarySearchTree\obj\Debug\Wpf_BinarySearchTree.csprojResolveAssemblyReference.cache
+C:\Users\Admin\source\repos\Wpf_BinarySearchTree\Wpf_BinarySearchTree\obj\Debug\Wpf_BinarySearchTree.csproj.CopyComplete

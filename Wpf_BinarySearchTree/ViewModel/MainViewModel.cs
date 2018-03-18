@@ -31,20 +31,21 @@ namespace Wpf_BinarySearchTree.ViewModel
         private double widthGridBST;
         private int num;
         private int numbeFind;
-        private int nodeBeDelete;
+        private int numBeDelete;
         private Node<int> nodeRoot;
 
         private readonly int VerticalMarging = 100;
         private readonly int HorizontalMarging = 50;
         private double heightGridBST;
+
         private ICommand btnAddNodeClickCommand;
         //private ICommand bSTGridSizeChanged;
         private ICommand btnFindNodeClickCommand;
         private ICommand btnDeleteNodeClickCommand;
 
-        public int Num { get => num; set => num = value; }
+        public int NumBeAdd { get => num; set => num = value; }
         public int NumbeFind { get => numbeFind; set => numbeFind = value; }
-        public int NodeBeDelete { get => nodeBeDelete; set => nodeBeDelete = value; }
+        public int NumBeDelete { get => numBeDelete; set => numBeDelete = value; }
         public Node<int> NodeRoot { get => nodeRoot; set => nodeRoot = value; }
         public double WidthGridBST { get => widthGridBST; set => widthGridBST = value; }
         public double HeightGridBST { get => heightGridBST; set => heightGridBST = value; }
@@ -56,20 +57,15 @@ namespace Wpf_BinarySearchTree.ViewModel
             {
                 return btnAddNodeClickCommand = new RelayCommand<object[]>((p) =>
                 {
-
-                    if ((Num == null) || (p[1] as Grid).Children.OfType<Button>().Where(pa => pa.Name.Equals($"Btn{Num.ToString()}")).ToList().Count != 0)
+                    if ((NumBeAdd == null) || (p[1] as Grid).Children.OfType<Button>().Where(pa => pa.Name.Equals($"Btn{NumBeAdd.ToString()}")).ToList().Count != 0)
                     {
-                        MessageBox.Show("Test");
+                        MessageBox.Show($"We don't have {NumBeAdd.ToString()}");
                         return;
                     }
                     AddButtonGridAsync(p[1] as Grid);
-                    //Task task = Task.Factory.StartNew(() => { Application.Current.Dispatcher.Invoke(() => {  }); });
-                    //await Task.Factory.ContinueWhenAll(new Task[] { task }, t => { });
                 });
             }
         }
-
-        //public ICommand BSTGridSizeChanged { get { return bSTGridSizeChanged; } }
 
         public ICommand BtnFindNodeClickCommand
         {
@@ -77,10 +73,9 @@ namespace Wpf_BinarySearchTree.ViewModel
             {
                 return btnFindNodeClickCommand = new RelayCommand<UIElement>((p) =>
                 {
-
                     if ((NumbeFind == null) || (p as Grid).Children.OfType<Button>().Where(pa => pa.Name.Equals($"Btn{NumbeFind.ToString()}")).ToList().Count == 0)
                     {
-                        MessageBox.Show("Test");
+                        MessageBox.Show($"We don't have {NumbeFind.ToString()}");
                         return;
                     }
                     FindNodeInGrid(new Node<int>(NumbeFind), p);
@@ -94,20 +89,13 @@ namespace Wpf_BinarySearchTree.ViewModel
             {
                 return btnDeleteNodeClickCommand = new RelayCommand<Grid>((p) =>
                 {
-
-                    if ((NodeBeDelete == null) || (p as Grid).Children.OfType<Button>().Where(pa => pa.Name.Equals($"Btn{NodeBeDelete.ToString()}")).ToList().Count == 0)
+                    if ((NumBeDelete == null) || (p as Grid).Children.OfType<Button>().Where(pa => pa.Name.Equals($"Btn{NumBeDelete.ToString()}")).ToList().Count == 0)
                     {
-                        MessageBox.Show("Test");
+                        MessageBox.Show($"We don't have {NumBeDelete.ToString()}");
                         return;
                     }
-                    DeleteNodeInGridAsync(p, NodeBeDelete);
-                    /*
-                    Task task = Task.Factory.StartNew(() => { Application.Current.Dispatcher.Invoke(() => {}); });
-                    await task;
-                    var a = task.IsCompleted;*/
+                    DeleteNodeInGridAsync(p, NumBeDelete);                    
                 });
-
-
             }
         }
 
@@ -117,7 +105,6 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// </summary>
         public MainViewModel(IDataService dataService)
         {
-
             _dataService = dataService;
             HeightGridBST = 705;
             WidthGridBST = 1138.3333333333335;
@@ -163,8 +150,6 @@ namespace Wpf_BinarySearchTree.ViewModel
              });
         }
 
-
-
         /// <summary>
         /// Grow a line to x2,y2
         /// </summary>
@@ -200,17 +185,17 @@ namespace Wpf_BinarySearchTree.ViewModel
             double y = 0;
             if ((p as Grid).Children.OfType<Button>().Count<Button>() == 0)
             {
-                nodeRoot = new Node<int>(Num, (p as Grid).ActualWidth / 2, VerticalMarging);
-                AddNode(p as Grid, Num, new Thickness((p as Grid).ActualWidth / 2, VerticalMarging, 0, 0));
+                nodeRoot = new Node<int>(NumBeAdd, (p as Grid).ActualWidth / 2, VerticalMarging);
+                AddNode(p as Grid, NumBeAdd, new Thickness((p as Grid).ActualWidth / 2, VerticalMarging, 0, 0));
                 return;
             }
-            if (NodeRoot.Contains(new Node<int>(Num)))
+            if (NodeRoot.Contains(new Node<int>(NumBeAdd)))
             {
                 return;
             }
-            var node = new Node<int>(Num, x, y);
+            var node = new Node<int>(NumBeAdd, x, y);
             NodeRoot.Insert(node);
-            var checkExitsParent = nodeRoot.FindParent(new Node<int>(Num));
+            var checkExitsParent = nodeRoot.FindParent(new Node<int>(NumBeAdd));
             if (checkExitsParent.Item1 != null)
             {
                 var oldX = checkExitsParent.Item1.X;
@@ -219,13 +204,13 @@ namespace Wpf_BinarySearchTree.ViewModel
                 {
                     x = oldX - (p as Grid).ActualWidth / Math.Pow(2, ((oldY + VerticalMarging) / VerticalMarging));
                     y = oldY + VerticalMarging;
-                    AddNode(p as Grid, Num, new Thickness(x, y, 0, 0));
+                    AddNode(p as Grid, NumBeAdd, new Thickness(x, y, 0, 0));
                 }
                 else if (checkExitsParent.Item2 == 1)
                 {
                     x = oldX + (p as Grid).ActualWidth / Math.Pow(2, ((oldY + VerticalMarging) / VerticalMarging));
                     y = oldY + VerticalMarging;
-                    AddNode(p as Grid, Num, new Thickness(x, y, 0, 0));
+                    AddNode(p as Grid, NumBeAdd, new Thickness(x, y, 0, 0));
                 }
                 node.X = x;
                 node.Y = y;
@@ -240,7 +225,6 @@ namespace Wpf_BinarySearchTree.ViewModel
                 );
                 await Task.WhenAll(taskDrawLine);
             }
-
         }
 
         /// <summary>
@@ -441,7 +425,7 @@ namespace Wpf_BinarySearchTree.ViewModel
 
         private async void DeleteNodeInGridAsync(Grid grid, int nodeDelete)
         {
-            if (nodeBeDelete == null)
+            if (numBeDelete == null)
             {
                 return;
             }
@@ -460,31 +444,21 @@ namespace Wpf_BinarySearchTree.ViewModel
                          AnimationButtonMovetTo(nodeDe.X, nodeDe.Y, buttonSucc);//to move a successor to new position (the button will be deleted)
                          Node<int> nodeDelPar = new Node<int>();
                          Task taskFindParent = Task.Factory.StartNew(() => { nodeDelPar = NodeRoot.FindParent(new Node<int>(nodeDelete)).Item1; });
-                         //var lineSuccParent = FindLineInGrid(grid, $"{"Btn" + nodeDelPar.Data.ToString() + "Btn" + nodeDelete.ToString()}");
-                         //UpdateButtonAfterDeleteAsync(grid, nodeDe.Data);
                          Task task = Task.Factory.StartNew(() =>
                          {
                              Application.Current.Dispatcher.Invoke(() => { UpdateButtonAfterDeleteAsync(grid, nodeSucc.Data); });
-
                          });
-                         Task taskRenameLine = Task.Factory.StartNew(() =>
-                         {
-                             Application.Current.Dispatcher.Invoke(() =>
-                             {
-
-                             }); ;
-                         });
+                         
                          await Task.Factory.ContinueWhenAll(new Task[] { task, taskFindParent }, t =>
                          {
-
-                             NodeRoot.Remove(new Node<int>(NodeBeDelete));
+                             NodeRoot.Remove(new Node<int>(NumBeDelete));
                          });
-                         await Task.WhenAll(new Task[] { taskRenameLine });
+                         
                          grid.Children.Remove(p.Result.Item2);
                          grid.Children.OfType<Line>().Where(l => l.Name.Contains($"{"Btn" + nodeDelete.ToString()}")).ToList().ForEach((item) =>
-                                 {
-                                     item.Name = item.Name.Replace($"{"Btn" + nodeDelete.ToString()}", $"{"Btn" + nodeSucc.Data.ToString()}");
-                                 });
+                         {
+                             item.Name = item.Name.Replace($"{"Btn" + nodeDelete.ToString()}", $"{"Btn" + nodeSucc.Data.ToString()}");
+                         });
                      }
                      else
                      {
@@ -499,18 +473,13 @@ namespace Wpf_BinarySearchTree.ViewModel
                               {
                                   NodeRoot = null;
                               }
-                              NodeRoot.Remove(new Node<int>(NodeBeDelete));
+                              NodeRoot.Remove(new Node<int>(NumBeDelete));
 
                           }); grid.Children.Remove(p.Result.Item2);
-
                      }
                      //AnimationButtonMovetTo(20, 20, p.Result.Item2);
-
-
                  });
              });
-
-
         }
 
         /// <summary>
