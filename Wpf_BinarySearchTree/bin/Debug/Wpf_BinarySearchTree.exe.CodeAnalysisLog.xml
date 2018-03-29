@@ -12,7 +12,7 @@
          <Members>
           <Member Name="#CompareTo(System.Object)" Kind="Method" Static="False" Accessibility="Public" ExternallyVisible="True">
            <Messages>
-            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2018-03-18 03:08:04Z" FixCategory="NonBreaking">
+            <Message TypeName="RethrowToPreserveStackDetails" Category="Microsoft.Usage" CheckId="CA2200" Status="Active" Created="2018-03-29 03:46:45Z" FixCategory="NonBreaking">
              <Issue Certainty="95" Level="Error" Path="C:\Users\Admin\source\repos\Wpf_BinarySearchTree\Wpf_BinarySearchTree\Model" File="BinaryTree.cs" Line="453">'Node&lt;T&gt;.CompareTo(object)' rethrows a caught exception and specifies it explicitly as an argument. Use 'throw' without an argument instead, in order to preserve the stack location where the exception was initially raised.</Issue>
             </Message>
            </Messages>
