@@ -382,6 +382,10 @@ namespace Wpf_BinarySearchTree.ViewModel
         /// <param name="button"></param>
         public void RoundButton(Button button)
         {
+            Style style = Application.Current.FindResource("MaterialDesignFloatingActionDarkButton") as Style;
+            button.Style = style;
+            button.ToolTip = button.Content;
+            /*
             ControlTemplate circleButtonTemplate = new ControlTemplate(typeof(Button));
 
             // Create the circle
@@ -407,6 +411,7 @@ namespace Wpf_BinarySearchTree.ViewModel
 
             // Set the ControlTemplate as the Button.Template
             button.Template = circleButtonTemplate;
+            */
         }
         #endregion
 
